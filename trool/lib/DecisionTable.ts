@@ -7,7 +7,7 @@
 
 import { IImportsHolder, IRow, Logger, parseCell, valsToArr } from './shared';
 import TableErrs from './TableErrs';
-
+import {parse} from './FunctionalGrammar';
 
 type Instances = Array<InstanceType<any>>;
 type ConditionFunction = ((factIdx: any, paramVal: any) => boolean);
@@ -82,6 +82,48 @@ class DecisionTable {
         }
     }
 
+    private evaluateToBoolean(block: any, fact:InstanceType<any>, paramVal:any):any {
+        this.evaluate(block, fact, paramVal)
+    }
+    private evaluate(block: any, fact:InstanceType<any>, paramVal:any):any {
+        console.log('evaluate',block);
+        if(block.type==='expression'){
+            return this.evaluateExpression(block, fact, paramVal);
+        }
+        else if(block.type==='function'){
+            return this.evaluateFunction(block, fact, paramVal)
+        }
+        else if(block.type==='string'){
+            return block.value;
+        }
+        else if(block.type==='number'){
+            return block.value;
+        }
+        else if(block.type==='symbol'){
+            if(block.value==='$param'){
+                return paramVal;
+            }
+            if(typeof fact[block.value]!=='undefined'){
+                return fact[block.value];
+            }
+        }
+    }
+    private evaluateExpression(expressionBlock: any, fact:InstanceType<any>, paramVal:any):any {
+        // console.log('evaluateExpression', expressionBlock, fact);
+        return this.evaluate(expressionBlock.body, fact, paramVal);
+    }
+    private evaluateFunction(functionBlock: any, fact:InstanceType<any>, paramVal:any):any {
+        // console.log('evaluateFunction', functionBlock, fact);
+        if(typeof fact[functionBlock.name]!=='function'){
+            throw new Error(this.errs.attrUndef + functionBlock.name);
+        }
+        let argsResult = [];
+        for(let argBlock of functionBlock.args){
+            argsResult.push(this.evaluate(argBlock, fact, paramVal));
+        }
+        return (<Function>fact[functionBlock.name]).apply(null, argsResult);
+    }
+
 
     private getCondOps(opStr: string): ConditionFunction {
         const outer = this;
@@ -90,25 +132,27 @@ class DecisionTable {
             const fact = outer.facts[factIdx];
             const errs = outer.errs;
             const arr = opStr.split(' ');
-            const methodName = arr[0].replace('()', '');
+            const methodName = arr[0].replace('()','');
+            // console.log('arr',arr,'methodName',methodName);
 
             if (!opStr) {
                 throw Error(errs.opBlank);
-            } else if (arr.length !== 3) {
-                throw Error(errs.opFormat + ` "${opStr}"`);
-            } else if (fact[methodName] === undefined) {
-                throw Error(errs.attrUndef + ` "${opStr}"`);
-            } else if (arr[2] !== '$param') {
-                throw Error(errs.mustEndWithParam + ` "${opStr}"`);
+            }
+            if(arr.length===3 && arr[2].trim()==='$param'){
+                let attrVal = null;
+                if (typeof fact[methodName] === 'function') {
+                    attrVal = fact[methodName]();
+                } else  {
+                    attrVal = fact[methodName];
+                }
+                return this.compareVals(arr[1], attrVal, paramVal);
+            }
+            else{
+                let parsedInput = parse(opStr);
+                let result = this.evaluateToBoolean(parsedInput, fact, paramVal);
+                return result;
             }
 
-            let attrVal = null;
-            if (typeof fact[methodName] === 'function') {
-                attrVal = fact[methodName]();
-            } else  {
-                attrVal = fact[methodName];
-            }
-            return this.compareVals(arr[1], attrVal, paramVal);
         };
     }
 

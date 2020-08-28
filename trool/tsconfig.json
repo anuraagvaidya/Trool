@@ -6,10 +6,12 @@
     "sourceMap": true,
     "typeRoots": [
       "node_modules/@types"
-    ]
+    ],
+    "composite": true
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "./lib/lib/*"
   ],
   "include": [
     "./lib/**/*"

@@ -212,3 +212,5 @@ with multiple values.
 
 - Import property name rules are the same as for JavaScript keys. That means alphanumeric, underscores,
 and dashes. Anything other than characters will throw an error.
+
+- When recompiling TS parser, make sure you globally install `tspegjs` and use command `tspegjs -o ./lib/FunctionalGrammar.ts --cache ./FunctionalGrammar.pegjs` in ./trool to regenerate the parser.
