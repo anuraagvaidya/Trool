@@ -1,5 +1,5 @@
 {
-  "name": "trool",
+  "name": "@anuraagvaidya/trool",
   "version": "1.0.8",
   "description": "a rule engine for NodeJS written in TypeScript",
   "main": "./lib/index.js",
