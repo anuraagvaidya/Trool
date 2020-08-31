@@ -34,6 +34,7 @@ class Trool {
             const jsonArr = await csvToJson().fromFile(filePath);
             const allImports = this.setupImports(jsonArr, imports || {});
             const decisionTables = this.getTables(jsonArr, facts, allImports);
+            console.log('decisionTables',decisionTables);
             return this.updateFacts(decisionTables);
         } catch (err) {
             throw err;

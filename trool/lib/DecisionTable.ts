@@ -83,7 +83,7 @@ class DecisionTable {
     }
 
     private evaluateToBoolean(block: any, fact:InstanceType<any>, paramVal:any):any {
-        this.evaluate(block, fact, paramVal)
+        return !!this.evaluate(block, fact, paramVal)
     }
     private evaluate(block: any, fact:InstanceType<any>, paramVal:any):any {
         console.log('evaluate',block);
