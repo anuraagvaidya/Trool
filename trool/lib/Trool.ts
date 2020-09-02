@@ -31,10 +31,9 @@ class Trool {
         Promise<IFactsHolder> {
 
         try {
-            const jsonArr = await csvToJson().fromFile(filePath);
+            const jsonArr = await csvToJson({noheader: true}).fromFile(filePath);
             const allImports = this.setupImports(jsonArr, imports || {});
             const decisionTables = this.getTables(jsonArr, facts, allImports);
-            console.log('decisionTables',decisionTables);
             return this.updateFacts(decisionTables);
         } catch (err) {
             throw err;

@@ -86,7 +86,7 @@ class DecisionTable {
         return !!this.evaluate(block, fact, paramVal)
     }
     private evaluate(block: any, fact:InstanceType<any>, paramVal:any):any {
-        console.log('evaluate',block);
+        // console.log('evaluate',block);
         if(block.type==='expression'){
             return this.evaluateExpression(block, fact, paramVal);
         }
@@ -138,7 +138,7 @@ class DecisionTable {
             if (!opStr) {
                 throw Error(errs.opBlank);
             }
-            if(arr.length===3 && arr[2].trim()==='$param'){
+            if(arr.length===3 && arr[2]?.trim()==='$param'){
                 let attrVal = null;
                 if (typeof fact[methodName] === 'function') {
                     attrVal = fact[methodName]();
@@ -148,9 +148,14 @@ class DecisionTable {
                 return this.compareVals(arr[1], attrVal, paramVal);
             }
             else{
-                let parsedInput = parse(opStr);
-                let result = this.evaluateToBoolean(parsedInput, fact, paramVal);
-                return result;
+                try{
+                    let parsedInput = parse(opStr);
+                    let result = this.evaluateToBoolean(parsedInput, fact, paramVal);
+                    return result;
+                }
+                catch(e){
+                    throw Error(`Error in expression ${paramVal} -> ${e.message}`)
+                }
             }
 
         };
@@ -250,7 +255,7 @@ class DecisionTable {
         }
         const retVal = parseCell(cellValStr, this.imports);
         if (retVal === null) {
-            throw Error(this.errs.invalidVal + ` '${cellValStr}'`);
+            throw Error(this.errs.invalidVal + ` '${cellValStr}' at condition ${condIdx}`);
         }
         return this.conditions[condIdx](factIdx, retVal);
     }
@@ -264,7 +269,7 @@ class DecisionTable {
         for (let i = 0; i < cellVals.length; i++) {
             const val = parseCell(cellVals[i], this.imports);
             if (val === null) {
-                throw Error(this.errs.invalidVal + ` '${cellValStr}'`);
+                throw Error(this.errs.invalidVal + ` '${cellValStr}' at action ${actionIdx}`);
             } else {
                 cellVals[i] = val;
             }
