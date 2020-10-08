@@ -121,7 +121,7 @@ class DecisionTable {
         for(let argBlock of functionBlock.args){
             argsResult.push(this.evaluate(argBlock, fact, paramVal));
         }
-        return (<Function>fact[functionBlock.name]).apply(null, argsResult);
+        return (<Function>fact[functionBlock.name]).apply(fact, argsResult);
     }
 
 
